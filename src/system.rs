@@ -1,9 +1,14 @@
 use std::collections::BTreeMap;
 
+
+// Define cutstom types to be more readable
+type AccountID = String;
+type BlockNumber = u32;
+type Nonce = u32;
 #[derive(Debug)]
 pub struct Pallet {
-    block_number: u32,
-    nonce: BTreeMap<String, u128>
+    block_number: BlockNumber,
+    nonce: BTreeMap<AccountID, Nonce>
 }
 
 impl Pallet {
@@ -14,7 +19,7 @@ impl Pallet {
         }
     }
 
-    pub fn block_number(&self) -> u32 {
+    pub fn block_number(&self) -> BlockNumber {
         self.block_number
     }
 
@@ -23,12 +28,12 @@ impl Pallet {
         self.block_number = self.block_number.checked_add(1).unwrap();
     } 
 
-    pub fn inc_nonce(&mut self, who: &String) {
+    pub fn inc_nonce(&mut self, who: &AccountID) {
         let nonce = self.nonce.get(who).unwrap_or(&0);
         self.nonce.insert(who.clone(), nonce + 1);
     }
 
-    pub fn get_nonce(&mut self, who: &String) -> u128 {
+    pub fn get_nonce(&mut self, who: &AccountID) -> u32 {
         *self.nonce.get(who).unwrap_or(&0)
     }
 
