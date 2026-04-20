@@ -37,11 +37,10 @@ impl Pallet {
 
 
 mod tests{
-    use crate::balances::Pallet;
 
 #[test]
 pub fn init_balance() {
-    let mut balances = Pallet::new();
+    let mut balances = super::Pallet::new();
 
     assert_eq!(balances.balance(&"Alice".to_string()), 0);
     balances.set_balance(&"Alice".to_string(), 100);
@@ -55,7 +54,7 @@ pub fn transfer_balance() {
     let alice = "Alice".to_string();
     let bob = "Bob".to_string();
 
-    let mut balances = Pallet::new();
+    let mut balances = super::Pallet::new();
 
     balances.set_balance(&alice.clone(), 100);
     let _ = balances.transfer(alice.clone(), bob.clone(), 90);
@@ -69,7 +68,7 @@ pub fn test_insufficient_balance_case() {
     let alice = "Alice".to_string();
     let bob = "Bob".to_string();
 
-    let mut balances = Pallet::new();
+    let mut balances = super::Pallet::new();
 
     balances.set_balance(&alice, 100);
     let result = balances.transfer(alice.clone(), bob.clone(), 110);
@@ -84,7 +83,7 @@ pub fn test_overflow_case() {
     let alice = "Alice".to_string();
     let bob ="bob".to_string();
 
-    let mut balances = Pallet::new();
+    let mut balances = super::Pallet::new();
 
     balances.set_balance(&bob, u128::MAX);
     balances.set_balance(&alice, 100);

@@ -1,8 +1,9 @@
 mod balances;
-use std::collections::BTreeMap;
+mod system;
 fn main() {
 
-    let mut pallet = balances::Pallet::new();
+    let mut balance = balances::Pallet::new();
+    let mut system = system::Pallet::new();
 
 }
 
