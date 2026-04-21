@@ -1,32 +1,29 @@
 use std::{collections::BTreeMap, ops::AddAssign};
 
-use num::traits::{Zero, One, CheckedAdd, CheckedSub};
+use num::traits::{CheckedAdd, CheckedSub, One, Zero};
 
-pub trait  Config {
+pub trait Config {
     type AccountID: Ord + Clone;
     type BlockNumber: Zero + One + AddAssign + Copy;
     type Nonce: Zero + One + Copy;
 }
-
 
 // Define cutstom types to be more readable
 type AccountID = String;
 type BlockNumber = u32;
 type Nonce = u32;
 
-
 #[derive(Debug)]
-pub struct Pallet <T: Config> {
+pub struct Pallet<T: Config> {
     block_number: T::BlockNumber,
-    nonce: BTreeMap<T::AccountID, T::Nonce>
+    nonce: BTreeMap<T::AccountID, T::Nonce>,
 }
 
-impl <T: Config> Pallet <T> 
-{
+impl<T: Config> Pallet<T> {
     pub fn new() -> Self {
-        Self { 
-            block_number: T::BlockNumber::zero(), 
-            nonce: BTreeMap::new() 
+        Self {
+            block_number: T::BlockNumber::zero(),
+            nonce: BTreeMap::new(),
         }
     }
 
@@ -37,7 +34,7 @@ impl <T: Config> Pallet <T>
     pub fn inc_block_number(&mut self) {
         // crashed if overflow for purpose
         self.block_number += T::BlockNumber::one();
-    } 
+    }
 
     pub fn inc_nonce(&mut self, who: &T::AccountID) {
         let nonce = *self.nonce.get(who).unwrap_or(&T::Nonce::zero());
@@ -47,12 +44,10 @@ impl <T: Config> Pallet <T>
     pub fn get_nonce(&mut self, who: &T::AccountID) -> T::Nonce {
         *self.nonce.get(who).unwrap_or(&T::Nonce::zero())
     }
-
 }
 
-
 mod test {
-    struct  TestConfig;
+    struct TestConfig;
 
     impl super::Config for TestConfig {
         type AccountID = String;
@@ -62,24 +57,22 @@ mod test {
 
     #[test]
     fn init_system() {
-       let system: super::Pallet<TestConfig> = super::Pallet::new();
-       assert_eq!(system.block_number(), 0)
+        let system: super::Pallet<TestConfig> = super::Pallet::new();
+        assert_eq!(system.block_number(), 0)
     }
 
     #[test]
     fn inc_block_number() {
-        let mut system:  super::Pallet<TestConfig> = super::Pallet::new();
+        let mut system: super::Pallet<TestConfig> = super::Pallet::new();
         system.inc_block_number();
         assert_eq!(system.block_number(), 1)
-
     }
     #[test]
     fn inc_nonce() {
         let alice = String::from("alice");
 
-        let mut system:  super::Pallet<TestConfig> = super::Pallet::new();
+        let mut system: super::Pallet<TestConfig> = super::Pallet::new();
         system.inc_nonce(&alice.clone());
         assert_eq!(system.get_nonce(&alice), 1);
-
     }
 }
