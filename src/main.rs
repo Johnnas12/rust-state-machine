@@ -1,15 +1,20 @@
+use crate::types::{AccountID, BlockNumber, Nonce};
+
 mod balances;
 mod system;
 
 mod types {
     pub type AccountId = String;
     pub type Balance = u128;
+    pub type AccountID = String;
+    pub type BlockNumber = u32;
+    pub type Nonce = u32;
 
 }
 
 #[derive(Debug)]
 pub struct Runtime {
-    system: system::Pallet,
+    system: system::Pallet <types::AccountID, types::BlockNumber, types::Nonce>,
     balances: balances::Pallet<types::AccountId, types::Balance>,
 
 }
