@@ -1,6 +1,5 @@
 use crate::{
-    support::Dispatch,
-    types::{AccountID, Balance, BlockNumber, Nonce},
+    balances::Call, support::Dispatch, types::{AccountID, Balance, BlockNumber, Nonce}
 };
 
 mod balances;
@@ -20,7 +19,7 @@ mod types {
 }
 
 pub enum RuntimeCall {
-    BalanceTransfer{to: types::AccountID, amount: types::Balance},
+    Balances(balances::Call<Runtime>)
 }
 
 impl system::Config for Runtime {
@@ -74,8 +73,8 @@ impl crate::support::Dispatch for Runtime {
     fn dispatch(&mut self, caller: Self::Caller, runtime_call: Self::Call) -> support::DispatchResult {
 
         match runtime_call {
-            RuntimeCall::BalanceTransfer { to, amount } => {
-                self.balances.transfer(caller, to, amount)?;
+            RuntimeCall::Balances(call) => {
+                self.balances.dispatch(caller, call)?;
             }
         }
         Ok(())
@@ -98,11 +97,11 @@ fn main() {
         extrinsics: vec![
             support::Extrinsic {
                 caller: alice.clone(),
-                call: RuntimeCall::BalanceTransfer { to: bob.clone(), amount: 30 }
+                call: RuntimeCall::Balances(balances::Call::Transfer  { to: bob.clone(), amount: 30 }), 
             },
             support::Extrinsic {
                 caller: alice.clone(),
-                call: RuntimeCall::BalanceTransfer { to: charlie.clone(), amount: 9 }
+                call: RuntimeCall::Balances(balances::Call::Transfer { to: charlie.clone(), amount: 9 })
             }
         ]
     };
@@ -112,15 +111,15 @@ fn main() {
         extrinsics: vec![
             support::Extrinsic {
                 caller: alice.clone(),
-                call: RuntimeCall::BalanceTransfer { to: bob.clone(), amount: 15 }
+                call: RuntimeCall::Balances(balances::Call::Transfer { to: bob.clone(), amount: 15 }),
             },
             support::Extrinsic {
                 caller: alice.clone(),
-                call: RuntimeCall::BalanceTransfer { to: charlie.clone(), amount: 20}
+                call: RuntimeCall::Balances(balances::Call::Transfer { to: charlie.clone(), amount: 20}),
             },
             support::Extrinsic {
                 caller: bob.clone(),
-                call: RuntimeCall::BalanceTransfer { to: alice.clone(), amount: 10}
+                call: RuntimeCall::Balances(balances::Call::Transfer { to: alice.clone(), amount: 10})
             }
         ]
     };
