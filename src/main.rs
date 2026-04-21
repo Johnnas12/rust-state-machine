@@ -5,6 +5,7 @@ use crate::{
 mod balances;
 mod support;
 mod system;
+mod proof_of_existance;
 
 mod types { 
     use crate::{RuntimeCall, support};
