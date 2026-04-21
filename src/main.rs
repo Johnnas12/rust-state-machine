@@ -1,4 +1,4 @@
-use crate::types::{AccountID, BlockNumber, Nonce};
+use crate::types::{AccountID, AccountId, Balance, BlockNumber, Nonce};
 
 mod balances;
 mod system;
@@ -18,10 +18,15 @@ impl system::Config for Runtime  {
     type Nonce = Nonce;
 }
 
+impl balances::Config for Runtime {
+    type AccountId = AccountId;
+    type Balance = Balance;
+}
+
 #[derive(Debug)]
 pub struct Runtime {
     system: system::Pallet <Runtime>,
-    balances: balances::Pallet<types::AccountId, types::Balance>,
+    balances: balances::Pallet<Runtime>,
 
 }
 
