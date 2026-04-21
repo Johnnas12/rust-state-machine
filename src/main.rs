@@ -1,5 +1,3 @@
-use std::ops::DerefMut;
-
 use crate::{
     support::Dispatch,
     types::{AccountID, Balance, BlockNumber, Nonce},
@@ -21,7 +19,9 @@ mod types {
     pub type Block = support::Block<Header, Extrinsic>;
 }
 
-pub enum RuntimeCall {}
+pub enum RuntimeCall {
+    BalanceTransfer{to: types::AccountID, amount: types::Balance},
+}
 
 impl system::Config for Runtime {
     type AccountID = AccountID;
@@ -71,8 +71,14 @@ impl crate::support::Dispatch for Runtime {
     type Caller = <Runtime as system::Config>::AccountID;
     type Call = RuntimeCall;
 
-    fn dispatch(&mut self, caller: Self::Caller, call: Self::Call) -> support::DispatchResult {
-        unimplemented!();
+    fn dispatch(&mut self, caller: Self::Caller, runtime_call: Self::Call) -> support::DispatchResult {
+
+        match runtime_call {
+            RuntimeCall::BalanceTransfer { to, amount } => {
+                self.balances.transfer(caller, to, amount)?;
+            }
+        }
+        Ok(())
     }
 }
 
