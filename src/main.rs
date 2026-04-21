@@ -1,10 +1,9 @@
-use crate::types::{AccountID, AccountId, Balance, BlockNumber, Nonce};
+use crate::types::{AccountID, Balance, BlockNumber, Nonce};
 
 mod balances;
 mod system;
 
 mod types {
-    pub type AccountId = String;
     pub type Balance = u128;
     pub type AccountID = String;
     pub type BlockNumber = u32;
@@ -19,7 +18,6 @@ impl system::Config for Runtime  {
 }
 
 impl balances::Config for Runtime {
-    type AccountId = AccountId;
     type Balance = Balance;
 }
 

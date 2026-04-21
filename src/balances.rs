@@ -3,14 +3,13 @@ use std::collections::BTreeMap;
 use num::traits::{CheckedAdd, CheckedSub, Zero};
 
 // first lets define out trait
-pub trait Config {
-    type AccountId: Ord + Clone;
+pub trait Config : crate::system::Config{
     type Balance: Zero + CheckedAdd + CheckedSub + Copy;
 }
 
 #[derive(Debug)]
 pub struct Pallet<T: Config> {
-    balances: BTreeMap<T::AccountId, T::Balance>
+    balances: BTreeMap<T::AccountID, T::Balance>
 }
 
 impl <T: Config> Pallet<T> 
@@ -21,15 +20,15 @@ impl <T: Config> Pallet<T>
         }
     }
 
-    pub fn set_balance(&mut self, who: &T::AccountId, amount: T::Balance ){
+    pub fn set_balance(&mut self, who: &T::AccountID, amount: T::Balance ){
         self.balances.insert(who.clone(), amount);
     }
 
-    pub fn balance(&mut self, who: &T::AccountId) -> T::Balance {
+    pub fn balance(&mut self, who: &T::AccountID) -> T::Balance {
         *self.balances.get(who).unwrap_or(&T::Balance::zero())
     }
 
-pub fn transfer(&mut self, caller: T::AccountId, to: T::AccountId, amount: T::Balance) -> Result<(), &'static str> {
+pub fn transfer(&mut self, caller: T::AccountID, to: T::AccountID, amount: T::Balance) -> Result<(), &'static str> {
     // 1. Get current balances
     let caller_balance = self.balance(&caller);
     let to_balance = self.balance(&to);
@@ -53,8 +52,13 @@ mod tests{
     pub struct TestConfig;
 
     impl super::Config for TestConfig {
-        type AccountId = String;
         type Balance = u128;
+    }
+
+    impl crate::system::Config for TestConfig {
+        type AccountID = String;
+        type BlockNumber = u32;
+        type Nonce = u32;
     }
 
 #[test]
