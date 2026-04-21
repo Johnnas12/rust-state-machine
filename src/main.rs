@@ -1,3 +1,5 @@
+use std::iter::Product;
+
 use crate::{
     balances::Call, support::Dispatch, types::{AccountID, Balance, BlockNumber, Nonce}
 };
@@ -124,7 +126,7 @@ fn main() {
         extrinsics: vec![
             support::Extrinsic {
                 caller: alice.clone(),
-                call: RuntimeCall::Balances(balances::Call::Transfer { to: bob.clone(), amount: 15 }),
+                call: RuntimeCall::ProofOfExistence(proof_of_existance::Call::CreateClaim { claim: "My document"}),
             },
             support::Extrinsic {
                 caller: alice.clone(),
@@ -132,7 +134,7 @@ fn main() {
             },
             support::Extrinsic {
                 caller: bob.clone(),
-                call: RuntimeCall::Balances(balances::Call::Transfer { to: alice.clone(), amount: 10})
+                call: RuntimeCall::ProofOfExistence(proof_of_existance::Call::CreateClaim { claim: "Bobs Document" })
             }
         ]
     };
