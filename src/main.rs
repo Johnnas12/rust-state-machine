@@ -7,7 +7,7 @@ mod balances;
 mod support;
 mod system;
 
-mod types {
+mod types { 
     use crate::{RuntimeCall, support};
 
     pub type Balance = u128;
@@ -91,24 +91,41 @@ fn main() {
     let bob = "bob".to_string();
     let charlie = "charlie".to_string();
 
-    // initialize alices balance
     runtime.balances.set_balance(&alice, 100);
 
-    runtime.system.inc_block_number();
+    let block_1 = types::Block {
+        header: support::Header { block_number: 1 },
+        extrinsics: vec![
+            support::Extrinsic {
+                caller: alice.clone(),
+                call: RuntimeCall::BalanceTransfer { to: bob.clone(), amount: 30 }
+            },
+            support::Extrinsic {
+                caller: alice.clone(),
+                call: RuntimeCall::BalanceTransfer { to: charlie.clone(), amount: 9 }
+            }
+        ]
+    };
 
-    assert_eq!(runtime.system.block_number(), 1);
+    let block_2 = types::Block {
+        header: support::Header { block_number: 2 },
+        extrinsics: vec![
+            support::Extrinsic {
+                caller: alice.clone(),
+                call: RuntimeCall::BalanceTransfer { to: bob.clone(), amount: 15 }
+            },
+            support::Extrinsic {
+                caller: alice.clone(),
+                call: RuntimeCall::BalanceTransfer { to: charlie.clone(), amount: 20}
+            },
+            support::Extrinsic {
+                caller: bob.clone(),
+                call: RuntimeCall::BalanceTransfer { to: alice.clone(), amount: 10}
+            }
+        ]
+    };
 
-    runtime.system.inc_nonce(&alice);
-    let _ = runtime
-        .balances
-        .transfer(alice.clone(), bob.clone(), 30)
-        .map_err(|e| println!("Error: {:?}", e));
-
-    runtime.system.inc_nonce(&alice);
-    let _ = runtime
-        .balances
-        .transfer(alice.clone(), charlie.clone(), 20)
-        .map_err(|e| println!("Error: {:?}", e));
-
+    runtime.execute_block(block_1).expect("Wrong Block Execution");    
+    runtime.execute_block(block_2).expect("Wrong Block execution");
     println!("{:#?}", runtime)
 }
