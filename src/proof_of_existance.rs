@@ -3,9 +3,6 @@ use std::collections::BTreeMap;
 use crate::support::DispatchResult;
 
 pub trait Config: crate::system::Config {
-	/// The type which represents the content that can be claimed using this pallet.
-	/// Could be the content directly as bytes, or better yet the hash of that content.
-	/// We leave that decision to the runtime developer.
 	type Content: Debug + Ord;
 }
 
@@ -16,8 +13,32 @@ pub struct Pallet<T: Config> {
 	/// A simple storage map from content to the owner of that content.
 	/// Accounts can make multiple different claims, but each claim can only have one owner.
 	/* TODO: Add a field `claims` which is a `BTreeMap` fom `T::Content` to `T::AccountId`. */
-    claims: BTreeMap<T::Content, T::AccountID>
+    claims: BTreeMap<T::Content, T::AccountId>
 }
+
+
+#[macros::call]
+impl<T: Config> Pallet<T> {
+        pub fn create_claim(&mut self, caller: T::AccountId, claim: T::Content) -> DispatchResult {
+        if self.claims.contains_key(&claim){
+            return Err(&"This content is already claimed");
+        }
+
+        self.claims.insert(claim, caller);
+        Ok(())
+    }
+
+    pub fn revoke_claim(&mut self, caller: T::AccountId, claim: T::Content) -> DispatchResult {
+        let claim_owner  = self.get_claims(&claim).ok_or("Claim owner doesnt exist")?;
+        if claim_owner != &caller {
+            return  Err("Caller is not the owner of the claim");
+        }
+        self.claims.remove(&claim);
+		Ok(())
+	}
+
+}
+
 
 impl<T: Config> Pallet<T> {
 	/// Create a new instance of the Proof of Existence Module.
@@ -28,47 +49,10 @@ impl<T: Config> Pallet<T> {
         }
 	}
 
-    pub fn get_claims(&self, claim: &T::Content) -> Option<&T::AccountID> {
+    pub fn get_claims(&self, claim: &T::Content) -> Option<&T::AccountId> {
         self.claims.get(claim)
     }
 
-    pub fn create_claim(&mut self, caller: T::AccountID, claim: T::Content) -> DispatchResult {
-        if self.claims.contains_key(&claim){
-            return Err(&"This content is already claimed");
-        }
-
-        self.claims.insert(claim, caller);
-        Ok(())
-    }
-
-    pub fn revoke_claim(&mut self, caller: T::AccountID, claim: T::Content) -> DispatchResult {
-        let claim_owner  = self.get_claims(&claim).ok_or("Claim owner doesnt exist")?;
-        if claim_owner != &caller {
-            return  Err("Caller is not the owner of the claim");
-        }
-        self.claims.remove(&claim);
-		Ok(())
-	}
-
-
-}
-
-pub enum Call<T: Config> {
-    CreateClaim{claim: T::Content},
-    RevokeClaim {claim: T::Content}
-}
-
-
-impl <T: Config> crate::support::Dispatch for Pallet<T> {
-    type Caller = T::AccountID;
-    type Call = Call<T>;
-
-    fn dispatch(&mut self, caller: Self::Caller, call: Self::Call) -> DispatchResult {
-        match call {
-            Call::CreateClaim { claim } => {  self.create_claim(caller, claim) },
-            Call::RevokeClaim { claim } => { self.revoke_claim(caller, claim)}
-        }
-    }
 }
 
 
@@ -81,7 +65,7 @@ mod test {
 	}
 
 	impl crate::system::Config for TestConfig {
-		type AccountID = &'static str;
+		type AccountId = &'static str;
 		type BlockNumber = u32;
 		type Nonce = u32;
 	}

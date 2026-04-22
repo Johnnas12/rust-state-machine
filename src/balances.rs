@@ -10,28 +10,16 @@ pub trait Config: crate::system::Config {
 
 #[derive(Debug)]
 pub struct Pallet<T: Config> {
-    balances: BTreeMap<T::AccountID, T::Balance>,
+    balances: BTreeMap<T::AccountId, T::Balance>,
 }
 
+#[macros::call]
 impl<T: Config> Pallet<T> {
-    pub fn new() -> Self {
-        Self {
-            balances: BTreeMap::new(),
-        }
-    }
-
-    pub fn set_balance(&mut self, who: &T::AccountID, amount: T::Balance) {
-        self.balances.insert(who.clone(), amount);
-    }
-
-    pub fn balance(&mut self, who: &T::AccountID) -> T::Balance {
-        *self.balances.get(who).unwrap_or(&T::Balance::zero())
-    }
 
     pub fn transfer(
         &mut self,
-        caller: T::AccountID,
-        to: T::AccountID,
+        caller: T::AccountId,
+        to: T::AccountId,
         amount: T::Balance,
     ) -> Result<(), &'static str> {
         // 1. Get current balances
@@ -50,25 +38,25 @@ impl<T: Config> Pallet<T> {
 
         Ok(())
     }
+
 }
 
-pub enum Call<T: Config> {
-    Transfer{to: T::AccountID, amount: T::Balance},
-}
-
-
-impl<T: Config> crate::support::Dispatch for Pallet<T> {
-    type Caller = T::AccountID;
-    type Call = Call<T>;
-
-    fn dispatch(&mut self, caller: Self::Caller, call: Self::Call) -> crate::support::DispatchResult {
-        match call {
-            Call::Transfer { to, amount } => {
-                self.transfer(caller, to, amount)?;
-            }
+impl<T: Config> Pallet<T> {
+    pub fn new() -> Self {
+        Self {
+            balances: BTreeMap::new(),
         }
-        Ok(())
     }
+
+    pub fn set_balance(&mut self, who: &T::AccountId, amount: T::Balance) {
+        self.balances.insert(who.clone(), amount);
+    }
+
+    pub fn balance(&mut self, who: &T::AccountId) -> T::Balance {
+        *self.balances.get(who).unwrap_or(&T::Balance::zero())
+    }
+
+
 }
 
 mod tests {
@@ -79,7 +67,7 @@ mod tests {
     }
 
     impl crate::system::Config for TestConfig {
-        type AccountID = String;
+        type AccountId = String;
         type BlockNumber = u32;
         type Nonce = u32;
     }
